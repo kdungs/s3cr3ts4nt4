@@ -10,8 +10,7 @@ import (
 )
 
 const (
-	numBits  = 4096
-	hashSize = 256
+	numBits = 4096
 )
 
 func defaultHash() hash.Hash {

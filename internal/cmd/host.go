@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	s3cr3ts4nt4 "github.com/kdungs/s3cr3ts4nt4/internal"
 	"github.com/spf13/cobra"
@@ -101,7 +102,7 @@ var hostRunCmd = &cobra.Command{
 	Short: "run a gift exchange",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if _, err := os.Stat(resultDir); !os.IsNotExist(err) {
-			return fmt.Errorf("directory %s already exists")
+			return fmt.Errorf("directory %s already exists", resultDir)
 		}
 		if len(args) < 2 {
 			return errors.New("at least two participants are required")
@@ -115,7 +116,7 @@ var hostRunCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("🎅 Running a gift exchange 🎅")
-		fmt.Printf("Users: %v\n", args)
+		fmt.Printf("Users: \n - %s\n", strings.Join(args, "\n - "))
 
 		// Create secret santa instance.
 		fh, err := os.Open(secretKeyFile)
@@ -157,7 +158,7 @@ var hostRunCmd = &cobra.Command{
 		}
 
 		// Create output directory
-		if err := os.MkdirAll(resultDir, os.ModeDir); err != nil {
+		if err := os.MkdirAll(resultDir, os.ModeDir|os.ModePerm); err != nil {
 			return fmt.Errorf(
 				"unable to create directory %s: %w",
 				resultDir,
