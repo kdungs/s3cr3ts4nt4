@@ -50,3 +50,10 @@ func Encrypt(public PublicKey, msg []byte) ([]byte, error) {
 func Decrypt(secret SecretKey, payload []byte) ([]byte, error) {
 	return rsa.DecryptOAEP(defaultHash(), rand.Reader, &secret.Key, payload, nil)
 }
+
+func KeyPairFromSecretKey(sec SecretKey) KeyPair {
+	return KeyPair{
+		Public: PublicKey{sec.Key.PublicKey},
+		Secret: sec,
+	}
+}

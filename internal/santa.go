@@ -19,6 +19,14 @@ func NewSanta(keypair KeyPair) *Santa {
 	}
 }
 
+func SantaFromSecret(r io.Reader) (*Santa, error) {
+	var sec SecretKey
+	if err := json.NewDecoder(r).Decode(&sec); err != nil {
+		return nil, fmt.Errorf("unable to deserialize secret key: %w", err)
+	}
+	return NewSanta(KeyPairFromSecretKey(sec)), nil
+}
+
 func (s *Santa) AddParticipant(p Participant) error {
 	for _, op := range s.Participants {
 		if op.Name == p.Name {
