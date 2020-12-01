@@ -116,7 +116,7 @@ var hostRunCmd = &cobra.Command{
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("🎅 Running a gift exchange 🎅")
-		fmt.Printf("Users: \n - %s\n", strings.Join(args, "\n - "))
+		fmt.Printf("Participants: \n - %s\n", strings.Join(args, "\n - "))
 
 		// Create secret santa instance.
 		fh, err := os.Open(secretKeyFile)
