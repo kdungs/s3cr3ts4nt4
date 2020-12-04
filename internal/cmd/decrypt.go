@@ -9,11 +9,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func addDecrypt(rootCmd *cobra.Command) {
-	var myIdentityFile string
+func addDecrypt(rootCmd *cobra.Command, cli *s3cr3ts4nt4.CLI) {
+	var identity string
 	decryptCmd := &cobra.Command{
 		Use:   "decrypt recipientFile",
-		Short: "decrypt a recipients address that was encrypted for you",
+		Short: "decrypt recipient information",
+		Long: `Decrypt your recipient's information.
+
+Once your host has sent you your recipient file ("YOUR NAME.out"), you can
+decrypt it using this command. The program will then show you the name and
+address of your recipient whom you can then send a gift.
+`,
 		Args: func(cmd *cobra.Command, args []string) error {
 			if len(args) != 1 {
 				return errors.New("recipient file has to be provided")
@@ -29,15 +35,15 @@ func addDecrypt(rootCmd *cobra.Command) {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return s3cr3ts4nt4.NewCli().Decrypt(myIdentityFile, args[0])
+			return cli.Decrypt(identity, args[0])
 		},
 	}
 	decryptCmd.Flags().StringVarP(
-		&myIdentityFile,
+		&identity,
 		"identity",
 		"i",
 		"me",
-		"your identity file",
+		"your identity",
 	)
 	rootCmd.AddCommand(decryptCmd)
 }

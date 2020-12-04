@@ -5,23 +5,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func addParticipate(rootCmd *cobra.Command) {
+func addParticipate(rootCmd *cobra.Command, cli *s3cr3ts4nt4.CLI) {
 	var identity string
 	var hostkeyFile string
 	var name string
 	var address string
-	var outfile string
 
 	participateCmd := &cobra.Command{
 		Use:   "participate",
 		Short: "participate in a gift exchange",
+		Long: `Participate in a gift exchange.
+
+This will create a file called "YOUR NAME.in" which only the host of the
+exchange can decrypt. Send it to them and wait for them to send you an
+encrypted file containing your recipient.  Please make sure you don't lose your
+identity file (e.g. me.id).
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return s3cr3ts4nt4.NewCli().Participate(
-				identity,
+			return cli.Participate(
 				hostkeyFile,
+				identity,
 				name,
 				address,
-				outfile,
 			)
 		},
 	}
@@ -30,14 +35,14 @@ func addParticipate(rootCmd *cobra.Command) {
 		"identity",
 		"i",
 		"me",
-		"your identity file; if it doesn't exist, it will be create on the fly",
+		"your identity; if it doesn't exist, it will be created",
 	)
 	participateCmd.Flags().StringVarP(
 		&hostkeyFile,
 		"hostkey",
 		"k",
 		"host.pub",
-		"host public key to use for the gift exchange",
+		"host public key",
 	)
 	participateCmd.Flags().StringVarP(
 		&name,
@@ -52,17 +57,9 @@ func addParticipate(rootCmd *cobra.Command) {
 		"address",
 		"a",
 		"",
-		"your address, you can use a quoted string with \\n",
+		"your address; you can use a single-quoted string with newlines",
 	)
 	participateCmd.MarkFlagRequired("address")
-	participateCmd.Flags().StringVarP(
-		&outfile,
-		"outfile",
-		"o",
-		"",
-		"the file to write your payload to; if not set it will use your name",
-	)
 
 	rootCmd.AddCommand(participateCmd)
-
 }

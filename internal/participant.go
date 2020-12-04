@@ -4,84 +4,54 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 )
 
 type Participant struct {
 	Name    string
 	Address string
-	Pubkey  PublicKey
+	Pubkey  NaclKey
 }
 
-func NewParticipant(name, address string, pubkey PublicKey) *Participant {
+func NewParticipant(name string, address string) (*Participant, *Identity, error) {
+	identity, err := GenerateIdentity()
+	if err != nil {
+		return nil, nil, err
+	}
 	return &Participant{
 		Name:    name,
 		Address: address,
-		Pubkey:  pubkey,
-	}
+		Pubkey:  identity.Public(),
+	}, identity, nil
 }
 
-func GenerateParticipant(name, address string) (*Participant, *SecretKey, error) {
-	keys, err := GenerateKeypair()
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to generate keypair for participant: %w", err)
-	}
-
-	return NewParticipant(name, address, keys.Public), &keys.Secret, nil
-}
-
-type participantInfo struct {
-	Name    string
-	Address string
-}
-
-type participantPayload struct {
-	EncryptedInfo []byte
-	Pubkey        PublicKey
-}
-
-func (p Participant) WriteEncryped(w io.Writer, public PublicKey) error {
-	infoBytes, err := json.Marshal(participantInfo{
-		Name:    p.Name,
-		Address: p.Address,
-	})
+func (p Participant) WriteEncryped(w io.Writer, pubkey NaclKey) error {
+	data, err := json.Marshal(p)
 	if err != nil {
 		return fmt.Errorf("unable to serialize participant info: %w", err)
 	}
-
-	encryptedInfo, err := Encrypt(public, infoBytes)
+	enc, err := pubkey.Encrypt(data)
 	if err != nil {
 		return fmt.Errorf("unable to encrypt participant info: %w", err)
 	}
-
-	payload := participantPayload{
-		EncryptedInfo: encryptedInfo,
-		Pubkey:        p.Pubkey,
-	}
-	if err := json.NewEncoder(w).Encode(payload); err != nil {
-		return fmt.Errorf("unable to serialize participant payload: %w", err)
+	if _, err := w.Write(enc); err != nil {
+		return fmt.Errorf("unable to write encrypted participant info: %w", err)
 	}
 	return nil
 }
 
-func ReadEncryptedParticipant(r io.Reader, secret SecretKey) (*Participant, error) {
-	var payload participantPayload
-	if err := json.NewDecoder(r).Decode(&payload); err != nil {
-		return nil, fmt.Errorf("unable to deserialize participant payload: %w", err)
+func ReadEncryptedParticipant(r io.Reader, identity Identity) (*Participant, error) {
+	msg, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, fmt.Errorf("unable to read: %w", err)
 	}
-
-	infoBytes, err := Decrypt(secret, payload.EncryptedInfo)
+	data, err := identity.Decrypt(msg)
 	if err != nil {
 		return nil, fmt.Errorf("unable to decrypt participant info: %w", err)
 	}
-
-	var info participantInfo
-	if err := json.Unmarshal(infoBytes, &info); err != nil {
+	var p Participant
+	if err := json.Unmarshal(data, &p); err != nil {
 		return nil, fmt.Errorf("unable to deserialize participant info: %w", err)
 	}
-
-	return &Participant{
-		Name:    info.Name,
-		Address: info.Address,
-		Pubkey:  payload.Pubkey,
-	}, nil
+	return &p, nil
 }

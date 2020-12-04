@@ -19,14 +19,14 @@ pushd $dir
 
 
 echo "[Step 1] Generate host key"
-$bin host new -i "${HOSTIDENT}"
+$bin host -i "${HOSTIDENT}" new
 
 if ! [ -f "${HOSTIDENT}.pub" ]; then
   echo "No host public key!"
   exit 1
 fi
-if ! [ -f "${HOSTIDENT}.sec" ]; then
-  echo "No host secret key!"
+if ! [ -f "${HOSTIDENT}.id" ]; then
+  echo "No host identity!"
   exit 1
 fi
 
@@ -42,37 +42,44 @@ function mktestuser {
     --identity "${ident}" \
     --name "${name}" \
     --address "${address}" \
-    --outfile "${ident}.out"
 
-  if ! [ -f "${ident}" ]; then
-    echo "Identity file ${ident} not found."
+  if ! [ -f "${ident}.id" ]; then
+    echo "Identity file ${ident}.id not found."
     exit 1
   fi
-  if ! [ -f "${ident}.out" ]; then
-    echo "Payload file ${ident}.out not found."
+  if ! [ -f "${name}.in" ]; then
+    echo "Payload file ${name}.in not found."
     exit 1
   fi
 }
-mktestuser "james" "James Jameson" "123 Some Street\nABC 123 Some town\nEngland"
-mktestuser "hans" "Hans Hansen" "Einestraße 23\n12345 Einestadt\nDeutschland"
-mktestuser "gigi" "Giacomo Gianluca" "Via Esempio 1\nLorem Citta\nItalia"
-mktestuser "testy" "Testy McTestface" "Tester road\nLoch Ness\nScottland"
+mktestuser "james" "James Jameson" '123 Some Street
+ABC 123 Some town
+England'
+mktestuser "hans" "Hans Hansen" 'Einestraße 23
+12345 Einestadt
+Deutschland'
+mktestuser "gigi" "Giacomo Gianluca" '
+Via Esempio 1
+Lorem Citta
+Italia'
+mktestuser "testy" "Testy McTestface" 'Tester road
+Loch Ness
+Scottland'
 
 
 echo "[Step 3] Generate gift exchange"
-$bin host run \
-  --secret "${HOSTIDENT}.sec" \
+$bin host --identity "${HOSTIDENT}" run \
   --outdir "${RESULTSDIR}" \
-  "james.out" \
-  "hans.out" \
-  "gigi.out" \
-  "testy.out"
+  "James Jameson.in" \
+  "Hans Hansen.in" \
+  "Giacomo Gianluca.in" \
+  "Testy McTestface.in"
 if ! [ -d "${RESULTSDIR}" ]; then
   echo "Results directory ${RESULTSDIR} not found"
   exit 1
 fi
 for user in "James Jameson" "Hans Hansen" "Giacomo Gianluca" "Testy McTestface"; do
-  if ! [ -f "${RESULTSDIR}/${user}" ]; then
+  if ! [ -f "${RESULTSDIR}/${user}.out" ]; then
     echo "No recipient file for ${user} found"
     exit 1
   fi
@@ -88,10 +95,10 @@ function readuser {
     --identity "${user}" \
     "${file}"
 }
-readuser "james" "results/James Jameson"
-readuser "hans" "results/Hans Hansen"
-readuser "gigi" "results/Giacomo Gianluca"
-readuser "testy" "results/Testy McTestface"
+readuser "james" "results/James Jameson.out"
+readuser "hans" "results/Hans Hansen.out"
+readuser "gigi" "results/Giacomo Gianluca.out"
+readuser "testy" "results/Testy McTestface.out"
 
 
 popd

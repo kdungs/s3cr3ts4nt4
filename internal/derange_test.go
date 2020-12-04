@@ -7,7 +7,6 @@ import (
 )
 
 func TestDerangedIndices(t *testing.T) {
-	// This test relies on random behaviour which might make it flaky.
 	is := is.New(t)
 
 	goodCases := []int{
