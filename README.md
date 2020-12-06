@@ -64,6 +64,12 @@ The host, after collecting all `.in` files, runs
 which creates a `results` directory. The host distributes the files from those
 directories to the participants either as a group or to each individually.
 
+Each participant can then decrypt their respective `.out` file using
+
+```bash
+./s3cr3s4nt4 decrypt "My Name.out"
+```
+
 The first version of s3cr3s4nt4 had a design flaw which required sending the
 files to each participant individually because public knowledge of file sizes
 would reveal the identity of each recipient. Thanks to @ibab for spotting this.
