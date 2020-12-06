@@ -1,10 +1,12 @@
 package s3cr3ts4nt4
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/big"
 )
 
 type Participant struct {
@@ -25,8 +27,40 @@ func NewParticipant(name string, address string) (*Participant, *Identity, error
 	}, identity, nil
 }
 
+func randomPadding() ([]byte, error) {
+	// TODO(kdungs): Make functions that use rand.Reader take an io.Reader
+	// instead.
+	rnd := rand.Reader
+	const minPadding = 128
+	const maxPadding = 1024
+
+	pSizeBig, err := rand.Int(rnd, big.NewInt(maxPadding-minPadding))
+	if err != nil {
+		return nil, err
+	}
+	pSize := pSizeBig.Int64() + minPadding
+
+	bs := make([]byte, pSize)
+	if _, err := rnd.Read(bs); err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+	return bs, nil
+}
+
 func (p Participant) WriteEncryped(w io.Writer, pubkey NaclKey) error {
-	data, err := json.Marshal(p)
+	padding, err := randomPadding()
+	if err != nil {
+		return fmt.Errorf("unable to generate random padding: %w", err)
+	}
+	payload := struct {
+		Participant
+		Padding []byte
+	}{
+		Participant: p,
+		Padding:     padding,
+	}
+
+	data, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("unable to serialize participant info: %w", err)
 	}
