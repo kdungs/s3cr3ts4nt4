@@ -70,6 +70,9 @@ Each participant can then decrypt their respective `.out` file using
 ./s3cr3s4nt4 decrypt "My Name.out"
 ```
 
+
+## Acknowledgements
+
 The first version of s3cr3s4nt4 had a design flaw which required sending the
 files to each participant individually because public knowledge of file sizes
 would reveal the identity of each recipient. Thanks to @ibab for spotting this.
