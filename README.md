@@ -29,9 +29,3 @@ assigns each participant a recipient. Technically speaking, it produces a
 derangement of the list of participants. For each participant, it uses that
 persons public key to encrypt the address of the recipient into a file that can
 then be sent to the person.
-
-
-
-You can watch a demo here
-
-[![asciicast](https://asciinema.org/a/vaGtsThKSkFzn3Eg98lx9unM4.svg)](https://asciinema.org/a/vaGtsThKSkFzn3Eg98lx9unM4)
